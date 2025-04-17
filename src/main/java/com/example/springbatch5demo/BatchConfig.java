@@ -22,6 +22,7 @@ import java.util.stream.IntStream;
 
 @Slf4j
 @Configuration
+//@EnableBatchProcessing
 public class BatchConfig {
     public static class IntReader extends ListItemReader<Integer> {
         public IntReader() {
@@ -63,7 +64,8 @@ public class BatchConfig {
         ItemProcessor<Integer, Integer> processor = new IntProcessor(name);
         ItemWriter<Integer> writer = new IntWriter(name);
         var step = new StepBuilder("step" + name, jobRepository)
-                .<Integer, Integer>chunk(10, transactionManager)
+                .<Integer, Integer>chunk(1, transactionManager)
+                .faultTolerant()
                 .allowStartIfComplete(true)
                 .reader(reader)
                 .processor(processor)
@@ -88,6 +90,6 @@ public class BatchConfig {
 
     @Bean
     TaskExecutor taskExecutor() {
-        return new TaskExecutorAdapter(Executors.newFixedThreadPool(5));
+        return new TaskExecutorAdapter(Executors.newFixedThreadPool(4));
     }
 }
